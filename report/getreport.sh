@@ -4,7 +4,7 @@ LOGPATH=/tmp/debug
 
 if [ $# -eq 0 ]
   then
-    echo "$0 <http_url> <secret>"
+    echo "$0 <https_url> <secret>"
     exit 0
 fi
 
