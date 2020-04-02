@@ -29,6 +29,7 @@ The script generate a full report of a Concourse worker.
 |`systemctl_debug`|Worker services details.|`concourse-worker.service, var-lib-concourse-datas.mount`|`false`|
 |`mount_debug`|Mounted volume (container datas).|``|`false`|
 |`ps_debug`|Processus running.|``|`false`|
+|`system_debug`|System information like uptime or uname.|``|`false`|
 |`curl_tsa`|Curl on concourse TSA server.|``|`false`|
 |`curl_url`|Curl on website.|`https://github.com github.com`|`false`|
 |`access_port`| Validate access on host/port (github ssh).|`github.com 22`|`false`|
@@ -59,6 +60,7 @@ The script generate a full report of a Cycloid on-premise setup.
 |`systemctl_debug`|Cycloid and concourse services.|`cycloid-api_container.service, cycloid-db_container.service, cycloid-frontend_container.service, cycloid-redis_container.service, cycloid-smtp_container.service, concourse-db_container.service, concourse-web_container.service, vault_container.service`|`false`|
 |`mount_debug`|Mounted volume (container datas).|``|`false`|
 |`ps_debug`|Processus running.|``|`false`|
+|`system_debug`|System information like uptime or uname.|``|`false`|
 |`network_debug`| Network informations (ip/route/resolv...).|``|`false`|
 |`curl_url`|Curl on cycloid, concourse service and github.|`80/3001/8080/8888/8443/8200`|`false`|
 |`access_port`| Validate access on cycloid, concourse and github ports.|`3306/6379/1025/8025/5432/2222`|`false`|

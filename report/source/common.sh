@@ -56,7 +56,22 @@ ps_debug () {
   ps aux > $LOGPATH/ps.log
 }
 
+################
+# system
+################
 
+system_debug () {
+  mkdir -p $LOGPATH/system
+
+  # Get uptime
+  uptime > $LOGPATH/system/uptime
+
+  # Show who is logged on
+  w > $LOGPATH/system/w_logged_users
+
+  # Get Kernel version
+  uname -a  > $LOGPATH/system/uptime
+}
 
 ################
 # /var/log/ like user-data.log

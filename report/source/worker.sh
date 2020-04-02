@@ -45,6 +45,7 @@ systemctl_debug var-lib-concourse-datas.mount
 mount_debug
 
 ps_debug
+system_debug
 
 curl_tsa
 curl_url https://github.com github.com
@@ -54,7 +55,7 @@ network_debug
 
 worker_status
 
-var_log_debug user-data.log concourse-worker.log syslog
+var_log_debug user-data.log concourse-worker.log syslog messages
 
 extra_files_debug /var/lib/concourse/concourse-worker /var/lib/concourse/host_key.pub
 
