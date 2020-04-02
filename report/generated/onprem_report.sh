@@ -106,6 +106,9 @@ network_debug () {
   # Get hosts
   cp /etc/hosts $LOGPATH/network/
 
+  # network interfaces
+  ip a > $LOGPATH/network/ip_a 2>&1
+
   # routing
   ip r > $LOGPATH/network/ip_r 2>&1
 
