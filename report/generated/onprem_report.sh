@@ -56,7 +56,22 @@ ps_debug () {
   ps aux > $LOGPATH/ps.log
 }
 
+################
+# system
+################
 
+system_debug () {
+  mkdir -p $LOGPATH/system
+
+  # Get uptime
+  uptime > $LOGPATH/system/uptime
+
+  # Show who is logged on
+  w > $LOGPATH/system/w_logged_users
+
+  # Get Kernel version
+  uname -a  > $LOGPATH/system/uptime
+}
 
 ################
 # /var/log/ like user-data.log
@@ -238,6 +253,7 @@ systemctl_debug concourse-web_container.service
 systemctl_debug vault_container.service
 
 ps_debug
+system_debug
 
 mount_debug
 network_debug
@@ -261,7 +277,7 @@ access_port github.com 22
 
 docker_debug
 
-var_log_debug syslog nginx/cycloid-api-access.log nginx/cycloid-api-error.log nginx/cycloid-console-access.log nginx/cycloid-console-error.log
+var_log_debug syslog messages nginx/cycloid-api-access.log nginx/cycloid-api-error.log nginx/cycloid-console-access.log nginx/cycloid-console-error.log
 extra_files_debug /etc/nginx/sites-enabled/01-cycloid-console.conf /etc/nginx/sites-enabled/02-cycloid-api.conf /etc/nginx/conf.d/01-proxy.conf
 
 send_report

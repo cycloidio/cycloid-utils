@@ -56,7 +56,22 @@ ps_debug () {
   ps aux > $LOGPATH/ps.log
 }
 
+################
+# system
+################
 
+system_debug () {
+  mkdir -p $LOGPATH/system
+
+  # Get uptime
+  uptime > $LOGPATH/system/uptime
+
+  # Show who is logged on
+  w > $LOGPATH/system/w_logged_users
+
+  # Get Kernel version
+  uname -a  > $LOGPATH/system/uptime
+}
 
 ################
 # /var/log/ like user-data.log
@@ -248,6 +263,7 @@ systemctl_debug var-lib-concourse-datas.mount
 mount_debug
 
 ps_debug
+system_debug
 
 curl_tsa
 curl_url https://github.com github.com
@@ -257,7 +273,7 @@ network_debug
 
 worker_status
 
-var_log_debug user-data.log concourse-worker.log syslog
+var_log_debug user-data.log concourse-worker.log syslog messages
 
 extra_files_debug /var/lib/concourse/concourse-worker /var/lib/concourse/host_key.pub
 
