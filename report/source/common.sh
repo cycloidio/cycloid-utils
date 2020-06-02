@@ -155,7 +155,7 @@ curl_url () {
   fi
 
   echo "curl $url -k -vL" >> $LOGPATH/curl/$name.log
-  curl $url -k -vL  >> $LOGPATH/curl/$name.log 2>&1
+  curl $url  --connect-timeout 5 -k -vL  >> $LOGPATH/curl/$name.log 2>&1
   echo "" >> $LOGPATH/curl/$name.log
 }
 
