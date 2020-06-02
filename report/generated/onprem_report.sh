@@ -71,6 +71,7 @@ system_debug () {
 
   # Get Kernel version
   uname -a  > $LOGPATH/system/uptime
+  cat /proc/cmdline > $LOGPATH/system/proc_cmdline
 }
 
 ################
