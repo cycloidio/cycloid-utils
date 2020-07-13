@@ -2,19 +2,9 @@
 
 Scripts used to provide useful debug report to the Cycloid team.
 
-# Contribution
-
-Global functions are located under `source/common.sh`.
-Please use the `generate.sh` script to update `generated/*_report.sh` ones.
-
-```
-./generate.sh
-```
-
 # Details
 
 * **worker_report.sh**: Generate report from Concourse worker and provide a URL + secret.
-* **onprem_report.sh**: Generate report from Cycloid onprem setup and provide a URL + secret.
 * **getreport.sh**: Get report from provided URL + secret.
 
 ## worker_report.sh
@@ -44,36 +34,8 @@ The script generate a full report of a Concourse worker.
 
 ### Usage
 ```
-curl -sSL https://raw.githubusercontent.com/cycloidio/cycloid-utils/master/report/generated/worker_report.sh | sudo bash
+curl -sSL https://raw.githubusercontent.com/cycloidio/cycloid-utils/master/report/worker_report.sh | sudo bash
 ```
-
-
-## onprem_report.sh
-
-The script generate a full report of a Cycloid on-premise setup.
-
-**functions list**
-
-|Name|Description|parameters|sensitive|
-|---|---|---|---|
-|`agreement`|Cycloid information and question regarding sensitive datas.|`false`|`false`|
-|`systemctl_debug`|Cycloid and concourse services.|`cycloid-api_container.service, cycloid-db_container.service, cycloid-frontend_container.service, cycloid-redis_container.service, cycloid-smtp_container.service, concourse-db_container.service, concourse-web_container.service, vault_container.service`|`false`|
-|`mount_debug`|Mounted volume (container datas).|``|`false`|
-|`ps_debug`|Processus running.|``|`false`|
-|`system_debug`|System information like uptime or uname.|``|`false`|
-|`network_debug`| Network informations (ip/route/resolv...).|``|`false`|
-|`curl_url`|Curl on cycloid, concourse service and github.|`80/3001/8080/8888/8443/8200`|`false`|
-|`access_port`| Validate access on cycloid, concourse and github ports.|`3306/6379/1025/8025/5432/2222`|`false`|
-|`docker_debug`| Docker details (service/ps/images...).|``|`false`|
-|`var_log_debug`| Get /var/log/<logname>.|`syslog nginx/cycloid-api-access.log nginx/cycloid-api-error.log`|`false`|
-|`extra_files_debug`| Copy extra files nginx configs.|`/etc/nginx/sites-enabled/01-cycloid-console.conf /etc/nginx/sites-enabled/02-cycloid-api.conf /etc/nginx/conf.d/01-proxy.conf`|`false`|
-|`send_report`| Send report.|``|`false`|
-
-### Usage
-```
-curl -sSL https://raw.githubusercontent.com/cycloidio/cycloid-utils/master/report/generated/onprem_report.sh | sudo bash
-```
-
 
 ## getreport.sh
 
