@@ -29,7 +29,7 @@ rm report.tar.gz
 # If tar files (ansible onprem report), extract all
 if ls | grep '.tar$' > /dev/null
   then
-    for i in $(ls); do
+    for i in $(ls *.tar); do
       tar xf $i;
       rm $i;
     done
