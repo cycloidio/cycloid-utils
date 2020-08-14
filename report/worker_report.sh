@@ -235,6 +235,8 @@ curl_tsa () {
 worker_status () {
   echo "curl 127.0.0.1:8888 -v" > $LOGPATH/worker_status.log
   curl 127.0.0.1:8888 -v > $LOGPATH/worker_status.log 2>&1
+
+  /var/lib/concourse/bin/concourse --version > $LOGPATH/worker_version 2>&1
 }
 
 ################
