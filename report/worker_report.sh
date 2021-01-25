@@ -213,7 +213,7 @@ send_report () {
   echo ""
   echo "Please share this url and secret to cycloid team: "
   echo ""
-  curl https://pastefile-owl.cycloid.io -F file=@${filename}.gpg
+  curl https://pastefile.owl.cycloid.io -F file=@${filename}.gpg
   echo "secret: $SECRET"
   rm /tmp/${filename} -rf
 }
