@@ -70,7 +70,7 @@ system_debug () {
   w > $LOGPATH/system/w_logged_users
 
   # Get Kernel version
-  uname -a  > $LOGPATH/system/uptime
+  uname -a  > $LOGPATH/system/uname
   cat /proc/cmdline > $LOGPATH/system/proc_cmdline
 }
 
