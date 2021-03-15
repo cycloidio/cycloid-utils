@@ -75,7 +75,7 @@ system_debug () {
 }
 
 ################
-# /var/log/ like user-data.log
+# /var/log/ like cloud-init-output.log
 ################
 
 var_log_debug () {
@@ -275,7 +275,7 @@ network_debug
 
 worker_status
 
-var_log_debug user-data.log concourse-worker.log syslog messages
+var_log_debug user-data.log cloud-init-output.log concourse-worker.log syslog messages
 
 extra_files_debug /var/lib/concourse/concourse-worker /var/lib/concourse/host_key.pub
 
