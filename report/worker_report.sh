@@ -66,6 +66,9 @@ system_debug () {
   # Get uptime
   uptime > $LOGPATH/system/uptime
 
+  # Show which user run the script
+  id > $LOGPATH/system/id
+
   # Show who is logged on
   w > $LOGPATH/system/w_logged_users
 
