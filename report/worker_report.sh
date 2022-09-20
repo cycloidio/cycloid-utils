@@ -63,6 +63,12 @@ ps_debug () {
 system_debug () {
   mkdir -p $LOGPATH/system
 
+  # Get disk free space
+  df -h > $LOGPATH/system/dfh
+
+  # Get disk free inode
+  df -hi > $LOGPATH/system/dfi
+
   # Get uptime
   uptime > $LOGPATH/system/uptime
 
