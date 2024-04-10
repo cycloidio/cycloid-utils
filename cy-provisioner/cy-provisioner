@@ -53,9 +53,6 @@ CY_TARGET_ORG=cycloid
 # [Required] Target API URL
 CY_TARGET_API_URL
 
-# The target VM instance where cycloid is installed
-CY_ONPREM_INSTANCE_IP
-
 # The current env, use your username if you are using it on your local machine
 ENV
 
@@ -90,7 +87,6 @@ fi
 export CY_TARGET_API_KEY=${CY_TARGET_API_KEY:?Target api key is required}
 export CY_TARGET_ORG=${CY_TARGET_ORG:-cycloid}
 export CY_TARGET_API_URL=${CY_TARGET_API_URL:?Target api url is required}
-export CY_ONPREM_INSTANCE_IP=${CY_ONPREM_INSTANCE_IP:-}
 export ENV=${ENV:?env is required}
 
 # Check required dependencies

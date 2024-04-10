@@ -7,7 +7,7 @@ This script is meant to easily provision some fixture for dev environment on a t
 Just curl the raw script and make it executable:
 
 ```console
-$ curl -LO https://raw.githubusercontent.com/cycloidio/cycloid-utils/master/dev-fixtures/cy-provisioner
+$ curl -LO https://raw.githubusercontent.com/cycloidio/cycloid-utils/master/cy-provisioner/cy-provisioner
 $ chmod +x cy-provisioner
 ```
 

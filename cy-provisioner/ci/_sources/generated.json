@@ -1,0 +1,21 @@
+{
+    "cy": {
+        "cargoLocks": null,
+        "date": "2024-03-26",
+        "extract": null,
+        "name": "cy",
+        "passthru": null,
+        "pinned": false,
+        "src": {
+            "deepClone": false,
+            "fetchSubmodules": false,
+            "leaveDotGit": false,
+            "name": null,
+            "rev": "f62c45681a4a6452af82a6d02e3f46cec951506c",
+            "sha256": "sha256-ho83hQ+Om5IqfWUnv0blQ6YWoZdHcJJiwZbkn8GoKRo=",
+            "type": "git",
+            "url": "https://github.com/cycloidio/cycloid-cli.git"
+        },
+        "version": "f62c45681a4a6452af82a6d02e3f46cec951506c"
+    }
+}
