@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  cy-provisioner:
+    image: "cy-provisioner:dev"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      CY_SOURCE_API_KEY: "${CY_SOURCE_API_KEY:?Missing the source cycloid api key}"
+      CY_TARGET_API_KEY: "${CY_TARGET_API_KEY}"
+      CY_TARGET_API_URL: "${CY_TARGET_API_URL}"
+      CY_TARGET_ORG: "${CY_TARGET_ORG}"
+      ENV: ${ENV}
+    working_dir: "/code"
+    volumes:
+    - "${PWD}:/code"
+    command: "bash -x ./cy-provisioner provision"
+
