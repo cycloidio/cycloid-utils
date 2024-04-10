@@ -1,5 +1,0 @@
-[cy]
-src.git = "https://github.com/cycloidio/cycloid-cli.git"
-src.branch = "feat/remove_help_on_error"
-fetch.git = "https://github.com/cycloidio/cycloid-cli.git"
-
