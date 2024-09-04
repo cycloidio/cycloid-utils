@@ -33,6 +33,7 @@ if __name__ == "__main__":
         EMAIL (default: "admin+${project}-${env}@cycloid.io"): specify the admin email
         ENABLE_PROVISIONING (default: false): enable provisioning using cy-provisioner.
         PROVISIONER_SCRIPT_URL (default: https://raw.githubusercontent.com/cycloidio/cycloid-utils/master/cy-provisioner/cy-provisioner): specify the provisioner script url to curl | bash
+        CY_LICENCE_CREDENTIAL (default: determined by the api version): specify the licence credential to use.
         ''')
     )
     parser.parse_args()
@@ -44,7 +45,9 @@ class Settings():
         self.credential_name: str = f"{self.project}-{self.env}" 
         self.host_api_url: str = os.environ.get("CY_SOURCE_API_URL", "https://http-api.cycloid.io")
         self.admin_email: str = os.environ.get("EMAIL", f"admin+{self.project}-{self.env}@cycloid.io")
-        self.licence_credential: str = os.environ.get("CY_LICENCE_CREDENTIAL", "scaleway-cycloid-backend")
+        self.licence_credential: str = os.environ.get("CY_LICENCE_CREDENTIAL", "")
+        if self.licence_credential == "":
+            self.infer_credential_per_api_version()
         self.provisioning_enabled: bool = os.environ.get("ENABLE_PROVISIONING", "false").lower() == "true"
 
         try:
@@ -53,6 +56,23 @@ class Settings():
         except KeyError as e:
             raise Exception(f"missing env var for metadata handling: {e}")
 
+
+    def infer_credential_per_api_version(self):
+        response = requests.get(self.target_api_url + "/version")
+        if response.status_code != 200:
+            raise Exception(
+                f"failed to check api version to determine wich licence to use, check backend or override CY_LICENCE_CREDENTIAL: {response.url} {response.status_code}: {response.text}"
+            )
+        
+        try:
+            if response.json()["data"]["branch"] == "master":
+                self.licence_credential = "scaleway-cycloid-backend-prod"
+            else:
+                self.licence_credential = "scaleway-cycloid-backend"
+        except Exception as e:
+            raise Exception(
+                f"failed to decode /version payload from api, reponse:\n{response.text}\n{e}"
+            )
 
 def log(*args, **kwargs):
     print("\033[0;32minfo:\033[0m", *args, **kwargs, file=sys.stderr)
@@ -115,7 +135,7 @@ class Credential:
     def write(self):
         url = self.base_url + "/organizations/cycloid/credentials"
         body = {
-            "name": "cycloid-playground-" + self.credential_name,
+            "name": f"initializer-{self.credential_name}",
             "canonical": self.credential_name,
             "type": "custom",
             "path": self.credential_name,
@@ -383,7 +403,7 @@ if __name__ == "__main__":
             "CY_TARGET_API_URL": settings.target_api_url,
             "CY_TARGET_API_KEY": cy_initializer.credential.data["token"],
         }
-        cmd = ["-c", script]
+        cmd = ["-xc", script]
 
         sub_process = subprocess.Popen(
                 executable="bash",
@@ -392,12 +412,11 @@ if __name__ == "__main__":
                 shell=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                bufsize=64,
                 encoding="utf-8",
                 env=env
             )
 
-        while sub_process.poll() is None:
+        while True:
             out = sub_process.stdout.readline()
             sys.stdout.write(out)
             sys.stdout.flush()
@@ -405,6 +424,12 @@ if __name__ == "__main__":
             err = sub_process.stderr.readline()
             sys.stderr.write(err)
             sys.stderr.flush()
+
+            if sub_process.poll() is not None:
+                break
+
+        if sub_process.returncode != 0:
+            error("provisioning failed")
 
         sys.exit(sub_process.returncode)
 
