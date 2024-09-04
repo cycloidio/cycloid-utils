@@ -3,8 +3,8 @@
 # Init checks
 
 if [[ "${BASH_VERSINFO:-0}" -lt 4 ]]; then
-	printf "bash version 4 or higher is required\n" >&2
-	exit 1
+  printf "bash version 4 or higher is required\n" >&2
+  exit 1
 fi
 
 # List required programs for this scrip here
@@ -59,29 +59,29 @@ ENV
 EOF
 
 for arg in "$@"; do
-	case "$arg" in
-	"-h" | "--help" | "help")
-		echo -e "$HELP"
-		exit 0
-		;;
-	"provision")
-		break
-		;;
-	*)
-		echo "error: Bad command ${arg}"
-		exit 1
-		;;
-	esac
+  case "$arg" in
+  "-h" | "--help" | "help")
+    echo -e "$HELP"
+    exit 0
+    ;;
+  "provision")
+    break
+    ;;
+  *)
+    echo "error: Bad command ${arg}"
+    exit 1
+    ;;
+  esac
 done
 
 # Check required env vars
 export CY_SOURCE_CREDENTIAL_RAW=${CY_SOURCE_CREDENTIAL_RAW}
 if [ -z "${CY_SOURCE_CREDENTIAL_RAW}" ]; then
-	echo "Using source credential from API"
-	export CY_SOURCE_API_KEY=${CY_SOURCE_API_KEY:?You need to provide the API key}
-	export CY_SOURCE_ORG=${CY_SOURCE_ORG:-cycloid}
-	export CY_SOURCE_API_URL=${CY_SOURCE_API_URL:-https://http-api.cycloid.io/api}
-	export CY_SOURCE_CREDENTIAL_CANONICAL=${CY_SOURCE_CREDENTIAL_CANONICAL:-onprem-provisioning-credentials}
+  echo "Using source credential from API"
+  export CY_SOURCE_API_KEY=${CY_SOURCE_API_KEY:?You need to provide the API key}
+  export CY_SOURCE_ORG=${CY_SOURCE_ORG:-cycloid}
+  export CY_SOURCE_API_URL=${CY_SOURCE_API_URL:-https://http-api.cycloid.io/api}
+  export CY_SOURCE_CREDENTIAL_CANONICAL=${CY_SOURCE_CREDENTIAL_CANONICAL:-onprem-provisioning-credentials}
 fi
 
 export CY_TARGET_API_KEY=${CY_TARGET_API_KEY:?Target api key is required}
@@ -91,22 +91,22 @@ export ENV=${ENV:?env is required}
 
 # Check required dependencies
 for program in $dependencies; do
-	which "$program" || {
-		echo -e "${program} required program not in \$PATH\nPlease install ${program}"
-		exit 1
-	}
+  which "$program" || {
+    echo -e "${program} required program not in \$PATH\nPlease install ${program}"
+    exit 1
+  }
 done
 
 # ------------------------------------------------------------------------------
 # Library
 print_in_color() {
-	local color="$1"
-	shift
-	if [[ -z ${NO_COLOR+x} ]]; then
-		printf "$color%b\e[0m\n" "$*"
-	else
-		printf "%b\n" "$*"
-	fi
+  local color="$1"
+  shift
+  if [[ -z ${NO_COLOR+x} ]]; then
+    printf "$color%b\e[0m\n" "$*"
+  else
+    printf "%b\n" "$*"
+  fi
 }
 
 red() { print_in_color "\e[31m" "$*"; }
@@ -131,143 +131,143 @@ magenta_underlined() { print_in_color "\e[4;35m" "$*"; }
 cyan_underlined() { print_in_color "\e[4;36m" "$*"; }
 
 error() {
-	echo -e "$(red error): $*\n"
+  echo -e "$(red error): $*\n"
 } 1>&2
 
 info() {
-	echo -e "$(green info): $*\n"
+  echo -e "$(green info): $*\n"
 } 1>&2
 
 warn() {
-	echo -e "$(yellow warn): $*\n"
+  echo -e "$(yellow warn): $*\n"
 } 1>&2
 
 debug() {
-	if [ -n "${args[--verbose]}" ]; then
-		echo -e "$(blue debug): $*\n"
-	fi
+  if [ -n "${args[--verbose]}" ]; then
+    echo -e "$(blue debug): $*\n"
+  fi
 } 1>&2
 
 exit_failed() {
-	code=${1:-1}
-	shift
+  code=${1:-1}
+  shift
 
-	error "$@"
-	exit "$code"
+  error "$@"
+  exit "$code"
 }
 
 check_code() {
-	code="$1"
-	shift
+  code="$1"
+  shift
 
-	if [ "$code" -ne 0 ]; then
-		exit_failed "$code" "$@"
-	fi
+  if [ "$code" -ne 0 ]; then
+    exit_failed "$code" "$@"
+  fi
 }
 
 try_prettify_json() {
-	set -o pipefail
-	result=$(echo "$@" | jq . || echo "$@")
-	set +o pipefail
-	echo "$result"
+  set -o pipefail
+  result=$(echo "$@" | jq . || echo "$@")
+  set +o pipefail
+  echo "$result"
 } 2>/dev/null
 
 cy_cmd_prettify_output() {
-	json="$*"
+  json="$*"
 
-	msg=""
-	if [ -z "$json" ]; then
-		echo 1>&2 "OK"
-		return
-	fi
+  msg=""
+  if [ -z "$json" ]; then
+    echo 1>&2 "OK"
+    return
+  fi
 
-	if [ "$(echo "$json" | jq -r '.Payload.errors | length' 2>/dev/null)" != "0" ]; then
-		msg+="Code::Message::Details\n"
-		msg+="$(echo "$json" | jq -r '.Payload.errors[] | "\(.code)::\(.message)::\(.details)"')"
-		msg="$(echo "$msg" | column -t -s '::')"
-	else
-		msg="OK"
-	fi
+  if [ "$(echo "$json" | jq -r '.Payload.errors | length' 2>/dev/null)" != "0" ]; then
+    msg+="Code::Message::Details\n"
+    msg+="$(echo "$json" | jq -r '.Payload.errors[] | "\(.code)::\(.message)::\(.details)"')"
+    msg="$(echo "$msg" | column -t -s '::')"
+  else
+    msg="OK"
+  fi
 
-	echo 1>&2 -e "$msg"
+  echo 1>&2 -e "$msg"
 }
 
 cy_cmd() {
-	set +e -o pipefail
-	result=$(cy --output json --insecure --verbosity error --org "$ORG" "$@" | jq -r .)
-	cmd_code="$?"
+  set +e -o pipefail
+  result=$(cy --output json --insecure --verbosity error --org "$ORG" "$@" | jq -r .)
+  cmd_code="$?"
 
-	# If the only error is 'AlreadyExists' don't return an error, it's ok
-	case "$(echo "$result" | jq -r .Payload.errors[0].code | uniq)" in
-	"AlreadyExists")
-		cmd_code=0
-		result='{"Payload": {} }\n'
-		;;
-	*) ;;
-	esac
+  # If the only error is 'AlreadyExists' don't return an error, it's ok
+  case "$(echo "$result" | jq -r .Payload.errors[0].code | uniq)" in
+  "AlreadyExists")
+    cmd_code=0
+    result='{"Payload": {} }\n'
+    ;;
+  *) ;;
+  esac
 
-	set -e +o pipefail
-	if [ "$cmd_code" -ne 0 ]; then
-		error "Cycloid CLI returned errors.\n$result"
-		return "$cmd_code"
-	else
-		cy_cmd_prettify_output "$result"
-		return 0
-	fi
+  set -e +o pipefail
+  if [ "$cmd_code" -ne 0 ]; then
+    error "Cycloid CLI returned errors.\n$result"
+    return "$cmd_code"
+  else
+    cy_cmd_prettify_output "$result"
+    return 0
+  fi
 }
 
 cy_curl() {
-	set +e -o pipefail
-	method=$1
-	shift
+  set +e -o pipefail
+  method=$1
+  shift
 
-	endpoint=$1
-	shift
-	# Check that the endpoint start with '/'
-	if [[ "${endpoint:0:1}" != "/" ]]; then
-		endpoint="/$endpoint"
-	fi
+  endpoint=$1
+  shift
+  # Check that the endpoint start with '/'
+  if [[ "${endpoint:0:1}" != "/" ]]; then
+    endpoint="/$endpoint"
+  fi
 
-	data="$*"
-	url=$CY_API_URL$endpoint
+  data="$*"
+  url=$CY_API_URL$endpoint
 
-	if [[ -n "$data" ]]; then
-		data_arg="-d $(echo "$data" | jq -c .)"
-		check_code "$?" "Cannot parse data as json: $data for curl $method $endpoint"
-		export data_arg
-	fi
+  if [[ -n "$data" ]]; then
+    data_arg="-d $(echo "$data" | jq -c .)"
+    check_code "$?" "Cannot parse data as json: $data for curl $method $endpoint"
+    export data_arg
+  fi
 
-	response=$(
-		curl --fail-with-body -k --silent -X "$method" \
-			-H "Authorization: Bearer ${CY_API_KEY:?error: missin api key}" \
-			-H "Content-Type: application/vnd.cycloid.io.v1+json" \
-			-H "Accept: application/json" \
-			"$data_arg" \
-			"$url"
-	)
-	code="$?"
-	set -e +o pipefail
-	if [ "$code" -ne 0 ]; then
-		error "Curl failed for $method $url, with data:\n$data\nResponse:\n$response"
-		return "$code"
-	else
-		try_prettify_json "$response"
-		return 0
-	fi
+  response=$(
+    curl --fail-with-body -k --silent -X "$method" \
+      -H "Authorization: Bearer ${CY_API_KEY:?error: missin api key}" \
+      -H "Content-Type: application/vnd.cycloid.io.v1+json" \
+      -H "Accept: application/json" \
+      "$data_arg" \
+      "$url"
+  )
+  code="$?"
+  set -e +o pipefail
+  if [ "$code" -ne 0 ]; then
+    error "Curl failed for $method $url, with data:\n$data\nResponse:\n$response"
+    return "$code"
+  else
+    try_prettify_json "$response"
+    return 0
+  fi
 }
 
 cy_template() {
-	service_catalog_ref=${1:?Input the service catalog ref as first arg}
-	name=${2:?Input the name of the stack as second arg}
-	canonical=${3:?Input the stack canonical}
-	author=${4:?Input the author of the stack as fourth arg}
-	service_catalog_source_canonical=${5:?Input the service catalog source canonical name of the template as fifth arg}
-	use_case=${6:?Input the use case of the template as sixth arg}
+  service_catalog_ref=${1:?Input the service catalog ref as first arg}
+  name=${2:?Input the name of the stack as second arg}
+  canonical=${3:?Input the stack canonical}
+  author=${4:?Input the author of the stack as fourth arg}
+  service_catalog_source_canonical=${5:?Input the service catalog source canonical name of the template as fifth arg}
+  use_case=${6:?Input the use case of the template as sixth arg}
 
-	timestamp=$(date +%s)
+  timestamp=$(date +%s)
 
-	cy_curl POST "/organizations/${ORG}/service_catalogs/${service_catalog_ref}/template" "$(
-		cat <<EOF
+  cy_curl POST "/organizations/${ORG}/service_catalogs/${service_catalog_ref}/template" "$(
+    cat <<EOF
 {
   "name": "${name}",
   "canonical": "${canonical}",
@@ -277,25 +277,25 @@ cy_template() {
   "timestamp": "${timestamp}"
 }
 EOF
-	)"
+  )"
 }
 
 cy_create_project() {
-	# I use env var as named args because it's easier to read
-	local org=${CY_PROJECT_ORG:?Input the org of the project in CY_PROJECT_ORG env var.}
-	local name=${CY_PROJECT_NAME:?Input the name of the project in CY_PROJECT_NAME env var.}
-	local description=${CY_PROJECT_DESCRIPTION:?Input the description of the project in CY_PROJECT_DESCRIPTION env var.}
-	local config_repository_canonical=${CY_PROJECT_CONFIG_REPOSITORY_CANONICAL:?Input the config repository canonical in CY_PROJECT_CONFIG_REPOSITORY_CANONICAL env var.}
-	local service_catalog_ref=${CY_PROJECT_SERVICE_CATALOG_REF:?Input the service catalog ref in CY_PROJECT_SERVICE_CATALOG_REF env var.}
-	local pipeline=${CY_PROJECT_PIPELINE:?Input the pipeline in CY_PROJECT_PIPELINE env var.}
-	local inputs=${CY_PROJECT_INPUTS:?Input the inputs in CY_PROJECT_INPUTS env var.}
-	local owner=${CY_PROJECT_OWNER:?Input the owner in CY_PROJECT_OWNER env var.}
+  # I use env var as named args because it's easier to read
+  local org=${CY_PROJECT_ORG:?Input the org of the project in CY_PROJECT_ORG env var.}
+  local name=${CY_PROJECT_NAME:?Input the name of the project in CY_PROJECT_NAME env var.}
+  local description=${CY_PROJECT_DESCRIPTION:?Input the description of the project in CY_PROJECT_DESCRIPTION env var.}
+  local config_repository_canonical=${CY_PROJECT_CONFIG_REPOSITORY_CANONICAL:?Input the config repository canonical in CY_PROJECT_CONFIG_REPOSITORY_CANONICAL env var.}
+  local service_catalog_ref=${CY_PROJECT_SERVICE_CATALOG_REF:?Input the service catalog ref in CY_PROJECT_SERVICE_CATALOG_REF env var.}
+  local pipeline=${CY_PROJECT_PIPELINE:?Input the pipeline in CY_PROJECT_PIPELINE env var.}
+  local inputs=${CY_PROJECT_INPUTS:?Input the inputs in CY_PROJECT_INPUTS env var.}
+  local owner=${CY_PROJECT_OWNER:?Input the owner in CY_PROJECT_OWNER env var.}
 
-	# Consume values
-	unset CY_PROJECT_ORG CY_PROJECT_NAME CY_PROJECT_DESCRIPTION CY_PROJECT_CONFIG_REPOSITORY_CANONICAL CY_PROJECT_PIPELINE CY_PROJECT_INPUTS CY_PROJECT_OWNER
+  # Consume values
+  unset CY_PROJECT_ORG CY_PROJECT_NAME CY_PROJECT_DESCRIPTION CY_PROJECT_CONFIG_REPOSITORY_CANONICAL CY_PROJECT_PIPELINE CY_PROJECT_INPUTS CY_PROJECT_OWNER
 
-	data="$(
-		cat <<EOF
+  data="$(
+    cat <<EOF
 {
   "config_repository_canonical": "${config_repository_canonical}",
   "description": "${description}",
@@ -308,41 +308,41 @@ cy_create_project() {
   "inputs": ${inputs}
 }
 EOF
-	)"
+  )"
 
-	info "Creating project ${name}"
-	cy_curl POST "/organizations/${org}/projects" "$data"
+  info "Creating project ${name}"
+  cy_curl POST "/organizations/${org}/projects" "$data"
 }
 
 git_put_branch() {
-	# Wipe existing $branch and create a new one from $source_branch
-	# Works only on git bare repo
-	local source_branch=${1:?Input the source branch as first arg}
-	local branch=${2:?Input the branch name as second arg}
-	local path=${3:?Input the path as third arg}
+  # Wipe existing $branch and create a new one from $source_branch
+  # Works only on git bare repo
+  local source_branch=${1:?Input the source branch as first arg}
+  local branch=${2:?Input the branch name as second arg}
+  local path=${3:?Input the path as third arg}
 
-	info "wiping $branch from current repo"
-	git branch -D "$branch" && git push origin --delete "$branch"
+  info "wiping $branch from current repo"
+  git branch -D "$branch" && git push origin --delete "$branch"
 
-	info "creating new $branch from $source_branch"
-	git worktree add -b "$branch" "$path" "$source_branch"
+  info "creating new $branch from $source_branch"
+  git worktree add -b "$branch" "$path" "$source_branch"
 
-	set -e # Allow failure to get back to correct dir
-	pushd "$path"
-	info "pushing to origin"
-	git push -u origin "$branch"
-	popd
+  set -e # Allow failure to get back to correct dir
+  pushd "$path"
+  info "pushing to origin"
+  git push -u origin "$branch"
+  popd
 }
 
 # ------------------------------------------------------------------------------
 # Variables setup
 export DIR=${PWD}
 if [ -z "$HOME" ]; then
-	if [ "$(id -u)" -eq 0 ]; then
-		export HOME="/root"
-	else
-		export HOME=${HOME:-/home/cy}
-	fi
+  if [ "$(id -u)" -eq 0 ]; then
+    export HOME="/root"
+  else
+    export HOME=${HOME:-/home/cy}
+  fi
 fi
 
 # ------------------------------------------------------------------------------
@@ -356,8 +356,8 @@ cy login --org "$CY_SOURCE_ORG" --api-key "$CY_SOURCE_API_KEY"
 
 # Get credentials
 CREDENTIALS=$(cy --insecure --org "$CY_SOURCE_ORG" --output json \
-	credential get \
-	--canonical "$CY_SOURCE_CREDENTIAL_CANONICAL" | jq -r .)
+  credential get \
+  --canonical "$CY_SOURCE_CREDENTIAL_CANONICAL" | jq -r .)
 
 export CREDENTIALS
 
@@ -365,8 +365,8 @@ CREDENTIALS_KEYS=$(echo "$CREDENTIALS" | jq -rc ".raw.raw | keys[]")
 info "found these keys in credential: ${CREDENTIALS_KEYS}"
 
 for cred in $(echo "$CREDENTIALS" | jq -r '.raw.raw | keys[]'); do
-	value=$(echo "$CREDENTIALS" | jq -r ".raw.raw.${cred}")
-	eval "export CRED_${cred^^}='${value}'"
+  value=$(echo "$CREDENTIALS" | jq -r ".raw.raw.${cred}")
+  eval "export CRED_${cred^^}='${value}'"
 done
 
 # Check that we get all the required credentials
@@ -430,79 +430,79 @@ cy login --org "$CY_TARGET_ORG" --api-key "$CY_TARGET_API_KEY"
 
 info "Creating Admin AWS credential"
 cy_cmd credential create aws \
-	--canonical "admin_aws" \
-	--path "admin_aws" \
-	--name "Admin AWS" \
-	--access-key "$(echo "$CRED_ADMIN_AWS" | jq -rc ".access_key")" \
-	--secret-key "$(echo "$CRED_ADMIN_AWS" | jq -rc ".secret_key")"
+  --canonical "admin_aws" \
+  --path "admin_aws" \
+  --name "Admin AWS" \
+  --access-key "$(echo "$CRED_ADMIN_AWS" | jq -rc ".access_key")" \
+  --secret-key "$(echo "$CRED_ADMIN_AWS" | jq -rc ".secret_key")"
 
 info "Creating Admin AWS Sandbox credential"
 cy_cmd credential create aws \
-	--canonical "admin_aws_sandbox" \
-	--path "admin_aws_sandbox" \
-	--name "Admin AWS sandbox" \
-	--access-key "$(echo "$CRED_ADMIN_AWS_SANDBOX" | jq -rc ".access_key")" \
-	--secret-key "$(echo "$CRED_ADMIN_AWS_SANDBOX" | jq -rc ".secret_key")"
+  --canonical "admin_aws_sandbox" \
+  --path "admin_aws_sandbox" \
+  --name "Admin AWS sandbox" \
+  --access-key "$(echo "$CRED_ADMIN_AWS_SANDBOX" | jq -rc ".access_key")" \
+  --secret-key "$(echo "$CRED_ADMIN_AWS_SANDBOX" | jq -rc ".secret_key")"
 
 info "Creating Admin GCP cycloid sandbox credential"
 cy_cmd credential create gcp \
-	--name "Cycloid GCP sandbox admin" \
-	--canonical "admin_gcp_cycloid_sandbox" \
-	--path "admin_gcp_cycloid_sandbox" \
-	--json-key <(echo "$CRED_ADMIN_GCP_CYCLOID_SANDBOX")
+  --name "Cycloid GCP sandbox admin" \
+  --canonical "admin_gcp_cycloid_sandbox" \
+  --path "admin_gcp_cycloid_sandbox" \
+  --json-key <(echo "$CRED_ADMIN_GCP_CYCLOID_SANDBOX")
 
 info "Creating Azure credentials"
 cy_cmd credential create azure \
-	--name "Azure credentials" \
-	--canonical "azure" \
-	--path "azure" \
-	--subscription-id "$(echo "$CRED_AZURE" | jq -rc ".subscription_id")" \
-	--client-id "$(echo "$CRED_AZURE" | jq -rc ".client_id")" \
-	--client-secret "$(echo "$CRED_AZURE" | jq -rc ".client_secret")" \
-	--tenant-id "$(echo "$CRED_AZURE" | jq -rc ".tenant_id")"
+  --name "Azure credentials" \
+  --canonical "azure" \
+  --path "azure" \
+  --subscription-id "$(echo "$CRED_AZURE" | jq -rc ".subscription_id")" \
+  --client-id "$(echo "$CRED_AZURE" | jq -rc ".client_id")" \
+  --client-secret "$(echo "$CRED_AZURE" | jq -rc ".client_secret")" \
+  --tenant-id "$(echo "$CRED_AZURE" | jq -rc ".tenant_id")"
 
 info "Creating Azure storage credentials"
 cy_cmd credential create azure_storage \
-	--name "Azure storage credentials" \
-	--canonical "azure_storage" \
-	--path "azure_storage" \
-	--account-name "$(echo "$CRED_AZURE" | jq -rc ".account_name")" \
-	--access-key "$(echo "$CRED_AZURE" | jq -rc ".access_key")"
+  --name "Azure storage credentials" \
+  --canonical "azure_storage" \
+  --path "azure_storage" \
+  --account-name "$(echo "$CRED_AZURE" | jq -rc ".account_name")" \
+  --access-key "$(echo "$CRED_AZURE" | jq -rc ".access_key")"
 
 info "Creating Cycloid stack test ssh key"
 cy_cmd credential create ssh \
-	--name "Cycloid stack test" \
-	--canonical "cycloid_stack_test_ssh" \
-	--path "cycloid_stack_test_ssh" \
-	--ssh-key <(echo "$CRED_CYCLOID_STACK_TEST_SSH_KEY")
+  --name "Cycloid stack test" \
+  --canonical "cycloid_stack_test_ssh" \
+  --path "cycloid_stack_test_ssh" \
+  --ssh-key <(echo "$CRED_CYCLOID_STACK_TEST_SSH_KEY")
 
 info "Create cycloid stacks ssh key"
 cy_cmd credential create ssh \
-	--name "Cycloid stacks ro" \
-	--canonical "cycloid_stacks_ssh_ro" \
-	--path "cycloid_stacks_ssh_ro" \
-	--ssh-key <(echo "$CRED_CYCLOID_STACKS_SSH_KEY")
+  --name "Cycloid stacks ro" \
+  --canonical "cycloid_stacks_ssh_ro" \
+  --path "cycloid_stacks_ssh_ro" \
+  --ssh-key <(echo "$CRED_CYCLOID_STACKS_SSH_KEY")
 
 info "Create cycloid template catalog ssh key"
 cy_cmd credential create ssh \
-	--name "Cycloid template catalog ssh key" \
-	--canonical "cycloid_template_catalog_ssh" \
-	--path "cycloid_template_catalog_ssh" \
-	--ssh-key <(echo "$CRED_CYCLOID_TEMPLATE_CATALOG_SSH_KEY")
+  --name "Cycloid template catalog ssh key" \
+  --canonical "cycloid_template_catalog_ssh" \
+  --path "cycloid_template_catalog_ssh" \
+  --ssh-key <(echo "$CRED_CYCLOID_TEMPLATE_CATALOG_SSH_KEY")
 
 info "Create cycloid github ssh_key"
 cy_cmd credential create ssh \
-	--name "Cycloid github ssh key" \
-	--canonical "ssh_github" \
-	--path "ssh_github" \
-	--ssh-key <(echo "$CRED_GIT_PRIVATE_KEY")
+  --name "Cycloid github ssh key" \
+  --canonical "ssh_github" \
+  --path "ssh_github" \
+  --ssh-key <(echo "$CRED_GIT_PRIVATE_KEY")
 
 info "Create cycloid bastion ssh key"
 cy_cmd credential create ssh \
-	--name "Cycloid bastion ssh key" \
-	--path "cyloid_bastion_ssh" \
-	--canonical "cycloid_bastion_ssh" \
-	--ssh-key <(echo "$CRED_GIT_SSH_BASION")
+  --name "Cycloid bastion ssh key" \
+  --path "cyloid_bastion_ssh" \
+  --canonical "cycloid_bastion_ssh" \
+  --ssh-key <(echo "$CRED_GIT_SSH_BASION")
 
 # ------------------------------------------------------------------------------
 # Create SSH branches for the current ${ENV} in https://github.com/cycloidio/catalog-repo-template
@@ -526,67 +526,67 @@ git_put_branch config "${CONFIG_BRANCH}" "branches/${ENV}-config"
 # Add cycloid stacks in read only: https://github.com/cycloidio/cycloid-stacks
 cycloid_stacks_canonical="cycloid-stacks-ro"
 cy_cmd catalog-repository create \
-	--branch stacks --cred "cycloid_stacks_ssh_ro" \
-	--url "git@github.com:cycloidio/cycloid-stacks.git" --name "$cycloid_stacks_canonical" || true
+  --branch stacks --cred "cycloid_stacks_ssh_ro" \
+  --url "git@github.com:cycloidio/cycloid-stacks.git" --name "$cycloid_stacks_canonical" || true
 cy_cmd catalog-repository refresh --canonical "$cycloid_stacks_canonical"
 
 # Add stack blueprints: https://github.com/cycloidio/stack-blueprints
 boostrap_canonical="cycloid-stack-blueprints"
 cy_cmd catalog-repository create \
-	--branch master --cred "ssh_github" \
-	--url "git@github.com:cycloidio/stack-blueprints.git" --name "$boostrap_canonical"
+  --branch master --cred "ssh_github" \
+  --url "git@github.com:cycloidio/stack-blueprints.git" --name "$boostrap_canonical"
 cy_cmd catalog-repository refresh --canonical "$boostrap_canonical"
 
 # Add cycloid stacks test: https://github.com/cycloidio/cycloid-stacks-test
 # We bypass any errors on this one since some stacks can be broken in it
 {
-	set +e
-	cy_cmd catalog-repository create \
-		--branch "stacks" --cred "cycloid_stack_test_ssh" \
-		--url "git@github.com:cycloidio/cycloid-stacks-test.git" --name "Cycloid stack test" &&
-		cy_cmd catalog-repository refresh --canonical "cycloid-stack-test"
+  set +e
+  cy_cmd catalog-repository create \
+    --branch "stacks" --cred "cycloid_stack_test_ssh" \
+    --url "git@github.com:cycloidio/cycloid-stacks-test.git" --name "Cycloid stack test" &&
+    cy_cmd catalog-repository refresh --canonical "cycloid-stack-test"
 } || {
-	# If this failed, this could be because the catalog has invalid stacks
-	warn "Cycloid stacks test had an error while refreshing"
-	warn "This could be due to invalid stack in the repository"
-	warn "You will have to check it manually"
+  # If this failed, this could be because the catalog has invalid stacks
+  warn "Cycloid stacks test had an error while refreshing"
+  warn "This could be due to invalid stack in the repository"
+  warn "You will have to check it manually"
 }
 
 # Add stacks test config repo
 cy_cmd config-repository create \
-	--branch "config" --cred "cycloid_stack_test_ssh" \
-	--url "git@github.com:cycloidio/cycloid-stacks-test.git" \
-	--name "stacks-test-config"
+  --branch "config" --cred "cycloid_stack_test_ssh" \
+  --url "git@github.com:cycloidio/cycloid-stacks-test.git" \
+  --name "stacks-test-config"
 
 # Add this env catalog / config repo
 cy_cmd catalog-repository create \
-	--branch "${STACKS_BRANCH}" --cred "cycloid_template_catalog_ssh" \
-	--url "git@github.com:cycloidio/catalog-repo-template.git" \
-	--name "cycloid-template-catalog"
+  --branch "${STACKS_BRANCH}" --cred "cycloid_template_catalog_ssh" \
+  --url "git@github.com:cycloidio/catalog-repo-template.git" \
+  --name "cycloid-template-catalog"
 cy_cmd catalog-repository refresh --canonical "cycloid-template-catalog"
 
 cy_cmd config-repository create \
-	--branch "${CONFIG_BRANCH}" --cred "cycloid_template_catalog_ssh" \
-	--url "git@github.com:cycloidio/catalog-repo-template.git" \
-	--name "cycloid-template-catalog-config" \
-	--default
+  --branch "${CONFIG_BRANCH}" --cred "cycloid_template_catalog_ssh" \
+  --url "git@github.com:cycloidio/catalog-repo-template.git" \
+  --name "cycloid-template-catalog-config" \
+  --default
 
 # Create stacks from basic blueprints
 ADMIN_USERNAME="admin cycloid"
 cy_template "cycloid:blank-sample" "Dummy stack templated" "dummy-stack-templated" \
-	"$ADMIN_USERNAME" "cycloid-template-catalog" "default"
+  "$ADMIN_USERNAME" "cycloid-template-catalog" "default"
 
 cy_template "cycloid:terraform-sample" "Terraform aws stack templated" "terraform-aws-stack-templated" \
-	"$ADMIN_USERNAME" "cycloid-template-catalog" "aws"
+  "$ADMIN_USERNAME" "cycloid-template-catalog" "aws"
 
 cy_template "cycloid:terraform-sample" "Terraform azure stack templated" "terraform-azure-stack-templated" \
-	"$ADMIN_USERNAME" "cycloid-template-catalog" "azure"
+  "$ADMIN_USERNAME" "cycloid-template-catalog" "azure"
 
 cy_template "cycloid:terraform-sample" "Terraform gcp stack templated" "terraform-gcp-stack-templated" \
-	"$ADMIN_USERNAME" "cycloid-template-catalog" "gcp"
+  "$ADMIN_USERNAME" "cycloid-template-catalog" "gcp"
 
 cy_template "cycloid:terraform-sample" "Terraform basic stack templated" "terraform-basic-stack-templated" \
-	"$ADMIN_USERNAME" "cycloid-template-catalog" "vanilla"
+  "$ADMIN_USERNAME" "cycloid-template-catalog" "vanilla"
 
 timestamp=$(date +%s)
 
@@ -596,10 +596,10 @@ use_case="gcp"
 env="test"
 pname="gcp-from-templated-${timestamp}"
 CY_PROJECT_NAME="${pname}" \
-	CY_PROJECT_DESCRIPTION="Test project" \
-	CY_PROJECT_CONFIG_REPOSITORY_CANONICAL="cycloid-template-catalog-config" \
-	CY_PROJECT_PIPELINE="$(
-		cat <<EOF
+  CY_PROJECT_DESCRIPTION="Test project" \
+  CY_PROJECT_CONFIG_REPOSITORY_CANONICAL="cycloid-template-catalog-config" \
+  CY_PROJECT_PIPELINE="$(
+    cat <<EOF
 [
   {
     "pipeline_name": "${pname}-${env}",
@@ -612,9 +612,9 @@ CY_PROJECT_NAME="${pname}" \
   }
 ]
 EOF
-	)" \
-	CY_PROJECT_INPUTS="$(
-		cat <<EOF
+  )" \
+  CY_PROJECT_INPUTS="$(
+    cat <<EOF
 [
   {
     "use_case": "${use_case}",
@@ -652,21 +652,21 @@ EOF
   }
 ]
 EOF
-	)" \
-	CY_PROJECT_OWNER="admin" \
-	CY_PROJECT_SERVICE_CATALOG_REF="cycloid:terraform-gcp-stack-templated" \
-	CY_PROJECT_ORG="${ORG}" \
-	cy_create_project
+  )" \
+  CY_PROJECT_OWNER="admin" \
+  CY_PROJECT_SERVICE_CATALOG_REF="cycloid:terraform-gcp-stack-templated" \
+  CY_PROJECT_ORG="${ORG}" \
+  cy_create_project
 
 # AZURE
 use_case="azure"
 env="test"
 pname="azure-from-templated-${timestamp}"
 CY_PROJECT_NAME="${pname}" \
-	CY_PROJECT_DESCRIPTION="Project created from azure bootsrapped stack" \
-	CY_PROJECT_CONFIG_REPOSITORY_CANONICAL="cycloid-template-catalog-config" \
-	CY_PROJECT_PIPELINE="$(
-		cat <<EOF
+  CY_PROJECT_DESCRIPTION="Project created from azure bootsrapped stack" \
+  CY_PROJECT_CONFIG_REPOSITORY_CANONICAL="cycloid-template-catalog-config" \
+  CY_PROJECT_PIPELINE="$(
+    cat <<EOF
 [
   {
     "pipeline_name": "${pname}-${env}",
@@ -679,9 +679,9 @@ CY_PROJECT_NAME="${pname}" \
   }
 ]
 EOF
-	)" \
-	CY_PROJECT_INPUTS="$(
-		cat <<EOF
+  )" \
+  CY_PROJECT_INPUTS="$(
+    cat <<EOF
 [
   {
     "use_case": "${use_case}",
@@ -710,21 +710,21 @@ EOF
   }
 ]
 EOF
-	)" \
-	CY_PROJECT_OWNER="admin" \
-	CY_PROJECT_SERVICE_CATALOG_REF="cycloid:terraform-azure-stack-templated" \
-	CY_PROJECT_ORG="${ORG}" \
-	cy_create_project
+  )" \
+  CY_PROJECT_OWNER="admin" \
+  CY_PROJECT_SERVICE_CATALOG_REF="cycloid:terraform-azure-stack-templated" \
+  CY_PROJECT_ORG="${ORG}" \
+  cy_create_project
 
 # AWS
 use_case="aws"
 env="test"
 pname="aws-from-templated-${timestamp}"
 CY_PROJECT_NAME="${pname}" \
-	CY_PROJECT_DESCRIPTION="Project created from aws bootsrapped stack" \
-	CY_PROJECT_CONFIG_REPOSITORY_CANONICAL="cycloid-template-catalog-config" \
-	CY_PROJECT_PIPELINE="$(
-		cat <<EOF
+  CY_PROJECT_DESCRIPTION="Project created from aws bootsrapped stack" \
+  CY_PROJECT_CONFIG_REPOSITORY_CANONICAL="cycloid-template-catalog-config" \
+  CY_PROJECT_PIPELINE="$(
+    cat <<EOF
 [
   {
     "pipeline_name": "${pname}-${env}",
@@ -736,9 +736,9 @@ CY_PROJECT_NAME="${pname}" \
   }
 ]
 EOF
-	)" \
-	CY_PROJECT_INPUTS="$(
-		cat <<EOF
+  )" \
+  CY_PROJECT_INPUTS="$(
+    cat <<EOF
 [
   {
     "use_case": "${use_case}",
@@ -767,8 +767,8 @@ EOF
   }
 ]
 EOF
-	)" \
-	CY_PROJECT_OWNER="admin" \
-	CY_PROJECT_SERVICE_CATALOG_REF="cycloid:terraform-aws-stack-templated" \
-	CY_PROJECT_ORG="${ORG}" \
-	cy_create_project
+  )" \
+  CY_PROJECT_OWNER="admin" \
+  CY_PROJECT_SERVICE_CATALOG_REF="cycloid:terraform-aws-stack-templated" \
+  CY_PROJECT_ORG="${ORG}" \
+  cy_create_project
