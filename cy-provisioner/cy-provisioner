@@ -91,7 +91,7 @@ export ENV=${ENV:?env is required}
 
 # Check required dependencies
 for program in $dependencies; do
-  which "$program" || {
+  which "$program" 2>/dev/null || {
     echo -e "${program} required program not in \$PATH\nPlease install ${program}"
     exit 1
   }
