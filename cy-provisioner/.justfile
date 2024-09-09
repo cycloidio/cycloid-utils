@@ -28,6 +28,17 @@ test-init:
 
   ./cy-initializer.py
 
+test-delete:
+  #!/usr/bin/env bash
+  set -euxo pipefail
+
+  export ENV="fbh-tests-init"
+  export PROJECT="cycloid-playground"
+  export CY_TARGET_API_URL="https://api-${ENV}.staging.cycloid.io"
+  export CY_SOURCE_API_KEY=$(op read "op://Cycloid/cycloid_admin_api_key/password")
+
+  ./cy-initializer.py --delete
+
 test-help:
   ./cy-initializer.py
 
