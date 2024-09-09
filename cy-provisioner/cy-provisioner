@@ -75,8 +75,8 @@ for arg in "$@"; do
 done
 
 # Check required env vars
-export CY_SOURCE_CREDENTIAL_RAW=${CY_SOURCE_CREDENTIAL_RAW}
-if [ -z "${CY_SOURCE_CREDENTIAL_RAW}" ]; then
+export CY_SOURCE_CREDENTIAL_RAW=${CY_SOURCE_CREDENTIAL_RAW:-""}
+if [ -z "${CY_SOURCE_CREDENTIAL_RAW:-""}" ]; then
   echo "Using source credential from API"
   export CY_SOURCE_API_KEY=${CY_SOURCE_API_KEY:?You need to provide the API key}
   export CY_SOURCE_ORG=${CY_SOURCE_ORG:-cycloid}
