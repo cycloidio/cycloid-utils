@@ -33,7 +33,7 @@ class Settings():
             self.infer_credential_per_api_version()
 
     def infer_credential_per_api_version(self):
-        response = requests.get(self.target_api_url + "/version")
+        response = requests.get(self.target_api_url + "/version", verify=False)
         if response.status_code != 200:
             raise Exception(
                 f"failed to check api version to determine wich licence to use, check backend or override CY_LICENCE_CREDENTIAL: {response.url} {response.status_code}: {response.text}"
@@ -286,6 +286,7 @@ class CycloidProvisionner:
                     "Content-Type": "application/vnd.cycloid.io.v1+json",
                     "Authorization": f"Bearer {self.source_token}",
                 },
+                verify=False,
             )
         if response.status_code != 200:
             raise Exception(
@@ -382,7 +383,7 @@ def init():
 
     if settings.provisioning_enabled:
         log("Starting provisioning")
-        response = requests.get("https://raw.githubusercontent.com/cycloidio/cycloid-utils/master/cy-provisioner/cy-provisioner")
+        response = requests.get("https://raw.githubusercontent.com/cycloidio/cycloid-utils/master/cy-provisioner/cy-provisioner", verify=False)
         script = response.text
          
         import subprocess
