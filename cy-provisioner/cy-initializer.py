@@ -404,7 +404,7 @@ def init():
                 executable=filename,
                 args=["provision"],
                 close_fds=True,
-                shell=True,
+                shell=False,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 encoding="utf-8",
