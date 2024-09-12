@@ -75,15 +75,11 @@ for arg in "$@"; do
 done
 
 # Check required env vars
-export CY_SOURCE_CREDENTIAL_RAW=${CY_SOURCE_CREDENTIAL_RAW:-""}
-if [ -z "${CY_SOURCE_CREDENTIAL_RAW:-""}" ]; then
-  echo "Using source credential from API"
-  export CY_SOURCE_API_KEY=${CY_SOURCE_API_KEY:?You need to provide the API key}
-  export CY_SOURCE_ORG=${CY_SOURCE_ORG:-cycloid}
-  export CY_SOURCE_API_URL=${CY_SOURCE_API_URL:-https://http-api.cycloid.io/api}
-  export CY_SOURCE_CREDENTIAL_CANONICAL=${CY_SOURCE_CREDENTIAL_CANONICAL:-onprem-provisioning-credentials}
-fi
-
+echo "Using source credential from API"
+export CY_SOURCE_API_KEY=${CY_SOURCE_API_KEY:?You need to provide the API key}
+export CY_SOURCE_ORG=${CY_SOURCE_ORG:-cycloid}
+export CY_SOURCE_API_URL=${CY_SOURCE_API_URL:-https://http-api.cycloid.io/api}
+export CY_SOURCE_CREDENTIAL_CANONICAL=${CY_SOURCE_CREDENTIAL_CANONICAL:-onprem-provisioning-credentials}
 export CY_TARGET_API_KEY=${CY_TARGET_API_KEY:?Target api key is required}
 export CY_TARGET_ORG=${CY_TARGET_ORG:-cycloid}
 export CY_TARGET_API_URL=${CY_TARGET_API_URL:?Target api url is required}
