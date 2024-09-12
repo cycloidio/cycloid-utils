@@ -40,10 +40,6 @@ CY_SOURCE_API_URL=https://http-api.cycloid.io/api
 # The canonical name of the source credential for provisioning
 CY_SOURCE_CREDENTIAL_CANONICAL=onprem-provisioning-credentials
 
-# You can provide directly the json raw value of the credential
-# via this env var if you want to use it locally
-CY_SOURCE_CREDENTIAL_RAW
-
 # [Required] Target instance API KEY
 CY_TARGET_API_KEY
 
@@ -75,6 +71,7 @@ for arg in "$@"; do
 done
 
 # Check required env vars
+set +u -x
 echo "Using source credential from API"
 export CY_SOURCE_API_KEY=${CY_SOURCE_API_KEY:?You need to provide the API key}
 export CY_SOURCE_ORG=${CY_SOURCE_ORG:-cycloid}
@@ -87,7 +84,7 @@ export ENV=${ENV:?env is required}
 
 # Check required dependencies
 for program in $dependencies; do
-  which "$program" 2>/dev/null || {
+  which "$program" || {
     echo -e "${program} required program not in \$PATH\nPlease install ${program}"
     exit 1
   }
