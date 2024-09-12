@@ -394,9 +394,15 @@ def init():
             "CY_TARGET_API_KEY": cy_initializer.credential.data["token"],
         }
 
+        from tempfile import gettempdir
+        filename = f"{gettempdir()}/cy-provisioner"
+        with open(filename, "w") as f:
+            f.write(script)
+            os.chmod(filename, 0o755)
+
         sub_process = subprocess.Popen(
-                executable="bash",
-                args=["-xc", script],
+                executable=filename,
+                args=["provision"],
                 close_fds=True,
                 shell=True,
                 stdout=subprocess.PIPE,
