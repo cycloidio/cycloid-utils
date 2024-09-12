@@ -406,7 +406,7 @@ def init():
                 close_fds=True,
                 shell=False,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
                 encoding="utf-8",
                 env=env
             )
@@ -416,10 +416,6 @@ def init():
             sys.stdout.write(out)
             sys.stdout.flush()
 
-            err = sub_process.stderr.readline()
-            sys.stderr.write(err)
-            sys.stderr.flush()
-
             if sub_process.poll() is not None:
                 break
 
@@ -427,7 +423,6 @@ def init():
             error("provisioning failed")
 
         sys.exit(sub_process.returncode)
-
 
 
 def delete():
