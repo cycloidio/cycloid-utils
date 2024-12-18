@@ -1,8 +1,7 @@
 #!/bin/bash
 
-
 help() {
-        echo "Usage: $0 <organization> <timestart> <timeend|now> [json|csv]"
+        echo "Usage: $0 <organization> <timestart> <timeend|now> [json|csv|csv-export]"
         echo "  export variable such CY_API_KEY and CY_API_URL"
         echo "  default output [json]"
         echo ""
@@ -12,6 +11,7 @@ help() {
         echo "  $0 cycloid 2024-10-20 2024-10-24"
         echo "  $0 cycloid 2024-10-20 now"
         echo "  $0 cycloid 2024-10-20 now csv"
+        echo "  $0 cycloid \$(date -d yesterday +%Y-%m-%d) \$(date -d yesterday +%Y-%m-%d) csv-export"
 }
 
 if [ $# -lt 3 ]; then
@@ -46,32 +46,46 @@ if [ "$EVENT_TIME_END" = "now" ]; then
   EVENT_TIME_END=$(date +%Y-%m-%d)
 fi
 
+# Convert date to timestamp. If hours is not provided, it will be set to 23:59:59
 convert_to_timestamp() {
-  # provide extra 000 for second
-  echo $(date -d "$1 23:59:59" +"%s000")
+  hours=$2
+  if [ -z "$hours" ]; then
+    hours="23:59:59"
+  fi
+  # provide extra 000 for second (used with curl on the API)
+  # echo $(date -d "$1 $hours" +"%s000")
+
+  echo $(date -d "$1 $hours" +"%s")
 }
 
-EVENT_TIMESTAMP_START=$(convert_to_timestamp $EVENT_TIME_START)
-EVENT_TIMESTAMP_END=$(convert_to_timestamp $EVENT_TIME_END)
-
+# Retrieves events from the Cycloid API within the specified time range.
+# Converts the provided start and end dates to timestamps and fetches
+# the events occurring between these timestamps. The events are returned
+# in JSON format and parsed using 'jq'.
 get_events() {
-  curl -q "$CY_API_URL/organizations/$CY_ORG/events?begin=$EVENT_TIMESTAMP_START&end=$EVENT_TIMESTAMP_END" 2>/dev/null \
-    -H "authorization: Bearer $CY_API_KEY" \
-    -H 'content-type: application/vnd.cycloid.io.v1+json' \
-    --compressed | jq .data[]
+  EVENT_TIMESTAMP_START=$(convert_to_timestamp $EVENT_TIME_START "00:00:00")
+  EVENT_TIMESTAMP_END=$(convert_to_timestamp $EVENT_TIME_END "23:59:59")
+  cy event list --begin $EVENT_TIMESTAMP_START --end $EVENT_TIMESTAMP_END -ojson 2>/dev/null| jq .[]
+
+# same with curl
+# curl -q "$CY_API_URL/organizations/$CY_ORG/events?begin=$EVENT_TIMESTAMP_START&end=$EVENT_TIMESTAMP_END" 2>/dev/null \
+#   -H "authorization: Bearer $CY_API_KEY" \
+#   -H 'content-type: application/vnd.cycloid.io.v1+json' \
+#   --compressed | jq .data[]
 }
-
-
-
-
 
 # main
 
 events=$(get_events)
 
-if [ "$OUTPUT_FORMAT" = "csv" ]; then
-  echo "id,time,title,severity,message,tags"
-  echo $events | jq -r '. | "\(.id),\(.timestamp / 1000 | todate),\(.title),\(.severity),\(.message),\([.tags[] | .key + "=" + .value] | join(" "))"'
+if [ "$OUTPUT_FORMAT" = "csv" ] || [ "$OUTPUT_FORMAT" = "csv-export" ]; then
+  STD_OUTPUT=/dev/stdout
+  if [ "$OUTPUT_FORMAT" = "csv-export" ]; then
+    STD_OUTPUT=/tmp/events.csv
+    echo "Exporting $EVENT_TIME_START to $STD_OUTPUT"
+  fi
+  echo "id,time,title,severity,message,tags" > $STD_OUTPUT
+  echo $events | jq -r '. | "\(.id),\(.timestamp / 1000 | todate),\(.title),\(.severity),\(.message),\([.tags[] | .key + "=" + .value] | join(" "))"' >> $STD_OUTPUT
 else
   echo $events | jq .
 fi

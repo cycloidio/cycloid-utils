@@ -7,7 +7,7 @@ Usage:
 ```bash
 export variable such CY_API_KEY and CY_API_URL
 
-events-export.sh <organization> <timestart> <timeend|now> [json|csv]
+events-export.sh <organization> <timestart> <timeend|now> [json|csv|csv-export]
 ```
 
 Example:
@@ -25,4 +25,7 @@ events-export.sh cycloid 2024-10-20 now
 
 # Get json report between 2024-10-20 and now in CSV format
 events-export.sh cycloid 2024-10-20 now csv
+
+# Generate a daily CSV report for the previous day to /tmp/events.csv
+events-export.sh cycloid $(date -d yesterday +%Y-%m-%d) $(date -d yesterday +%Y-%m-%d) csv-export
 ```
