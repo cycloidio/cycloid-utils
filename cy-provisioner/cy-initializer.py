@@ -41,9 +41,9 @@ class Settings():
         
         try:
             if response.json()["data"]["branch"] == "master":
-                self.licence_credential = "scaleway-cycloid-backend-prod"
+                self.licence_credential = "cycloid-onprem-licence-prod"
             else:
-                self.licence_credential = "scaleway-cycloid-backend"
+                self.licence_credential = "cycloid-onprem-licence-staging"
         except Exception as e:
             raise Exception(
                 f"failed to decode /version payload from api, reponse:\n{response.text}\n{e}"
