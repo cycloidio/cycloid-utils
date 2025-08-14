@@ -421,7 +421,7 @@ chmod 0600 "$SSH_DIR"/*
 cy login --org "$CY_TARGET_ORG" --api-key "$CY_TARGET_API_KEY"
 
 info "Creating Admin AWS credential"
-cy_cmd credential create aws \
+cy_cmd credential create --update aws \
   --canonical "admin_aws" \
   --path "admin_aws" \
   --name "Admin AWS" \
@@ -429,7 +429,7 @@ cy_cmd credential create aws \
   --secret-key "$(echo "$CRED_ADMIN_AWS" | jq -rc ".secret_key")"
 
 info "Creating Admin AWS Sandbox credential"
-cy_cmd credential create aws \
+cy_cmd credential create --update aws \
   --canonical "admin_aws_sandbox" \
   --path "admin_aws_sandbox" \
   --name "Admin AWS sandbox" \
@@ -437,14 +437,14 @@ cy_cmd credential create aws \
   --secret-key "$(echo "$CRED_ADMIN_AWS_SANDBOX" | jq -rc ".secret_key")"
 
 info "Creating Admin GCP cycloid sandbox credential"
-cy_cmd credential create gcp \
+cy_cmd credential create --update gcp \
   --name "Cycloid GCP sandbox admin" \
   --canonical "admin_gcp_cycloid_sandbox" \
   --path "admin_gcp_cycloid_sandbox" \
   --json-key <(echo "$CRED_ADMIN_GCP_CYCLOID_SANDBOX")
 
 info "Creating Azure credentials"
-cy_cmd credential create azure \
+cy_cmd credential create --update azure \
   --name "Azure credentials" \
   --canonical "azure" \
   --path "azure" \
@@ -454,7 +454,7 @@ cy_cmd credential create azure \
   --tenant-id "$(echo "$CRED_AZURE" | jq -rc ".tenant_id")"
 
 info "Creating Azure storage credentials"
-cy_cmd credential create azure_storage \
+cy_cmd credential create --update azure_storage \
   --name "Azure storage credentials" \
   --canonical "azure_storage" \
   --path "azure_storage" \
@@ -462,35 +462,35 @@ cy_cmd credential create azure_storage \
   --access-key "$(echo "$CRED_AZURE" | jq -rc ".access_key")"
 
 info "Creating Cycloid stack test ssh key"
-cy_cmd credential create ssh \
+cy_cmd credential create --update ssh \
   --name "Cycloid stack test" \
   --canonical "cycloid_stack_test_ssh" \
   --path "cycloid_stack_test_ssh" \
   --ssh-key <(echo "$CRED_CYCLOID_STACK_TEST_SSH_KEY")
 
 info "Create cycloid stacks ssh key"
-cy_cmd credential create ssh \
+cy_cmd credential create --update ssh \
   --name "Cycloid stacks ro" \
   --canonical "cycloid_stacks_ssh_ro" \
   --path "cycloid_stacks_ssh_ro" \
   --ssh-key <(echo "$CRED_CYCLOID_STACKS_SSH_KEY")
 
 info "Create cycloid template catalog ssh key"
-cy_cmd credential create ssh \
+cy_cmd credential create --update ssh \
   --name "Cycloid template catalog ssh key" \
   --canonical "cycloid_template_catalog_ssh" \
   --path "cycloid_template_catalog_ssh" \
   --ssh-key <(echo "$CRED_CYCLOID_TEMPLATE_CATALOG_SSH_KEY")
 
 info "Create cycloid github ssh_key"
-cy_cmd credential create ssh \
+cy_cmd credential create --update ssh \
   --name "Cycloid github ssh key" \
   --canonical "ssh_github" \
   --path "ssh_github" \
   --ssh-key <(echo "$CRED_GIT_PRIVATE_KEY")
 
 info "Create cycloid bastion ssh key"
-cy_cmd credential create ssh \
+cy_cmd credential create --update ssh \
   --name "Cycloid bastion ssh key" \
   --path "cyloid_bastion_ssh" \
   --canonical "cycloid_bastion_ssh" \
@@ -526,7 +526,7 @@ cy_cmd catalog-repository refresh --canonical "$cycloid_stacks_canonical"
 boostrap_canonical="cycloid-stack-blueprints"
 cy_cmd catalog-repository create \
   --branch master --cred "ssh_github" \
-  --url "git@github.com:cycloidio/stack-blueprints.git" --name "$boostrap_canonical"
+  --url "git@github.com:cycloidio/stack-blueprints.git" --name "$boostrap_canonical" || true
 cy_cmd catalog-repository refresh --canonical "$boostrap_canonical"
 
 # Add cycloid stacks test: https://github.com/cycloidio/cycloid-stacks-test
@@ -548,37 +548,37 @@ cy_cmd catalog-repository refresh --canonical "$boostrap_canonical"
 cy_cmd config-repository create \
   --branch "config" --cred "cycloid_stack_test_ssh" \
   --url "git@github.com:cycloidio/cycloid-stacks-test.git" \
-  --name "stacks-test-config"
+  --name "stacks-test-config" || true
 
 # Add this env catalog / config repo
 cy_cmd catalog-repository create \
   --branch "${STACKS_BRANCH}" --cred "cycloid_template_catalog_ssh" \
   --url "git@github.com:cycloidio/catalog-repo-template.git" \
-  --name "cycloid-template-catalog"
+  --name "cycloid-template-catalog" || true
 cy_cmd catalog-repository refresh --canonical "cycloid-template-catalog"
 
 cy_cmd config-repository create \
   --branch "${CONFIG_BRANCH}" --cred "cycloid_template_catalog_ssh" \
   --url "git@github.com:cycloidio/catalog-repo-template.git" \
   --name "cycloid-template-catalog-config" \
-  --default
+  --default || true
 
 # Create stacks from basic blueprints
 ADMIN_USERNAME="admin cycloid"
 cy_template "cycloid:blank-sample" "Dummy stack templated" "dummy-stack-templated" \
-  "$ADMIN_USERNAME" "cycloid-template-catalog" "default"
+  "$ADMIN_USERNAME" "cycloid-template-catalog" "default" || true
 
 cy_template "cycloid:terraform-sample" "Terraform aws stack templated" "terraform-aws-stack-templated" \
-  "$ADMIN_USERNAME" "cycloid-template-catalog" "aws"
+  "$ADMIN_USERNAME" "cycloid-template-catalog" "aws" || true
 
 cy_template "cycloid:terraform-sample" "Terraform azure stack templated" "terraform-azure-stack-templated" \
-  "$ADMIN_USERNAME" "cycloid-template-catalog" "azure"
+  "$ADMIN_USERNAME" "cycloid-template-catalog" "azure" || true
 
 cy_template "cycloid:terraform-sample" "Terraform gcp stack templated" "terraform-gcp-stack-templated" \
-  "$ADMIN_USERNAME" "cycloid-template-catalog" "gcp"
+  "$ADMIN_USERNAME" "cycloid-template-catalog" "gcp" || true
 
 cy_template "cycloid:terraform-sample" "Terraform basic stack templated" "terraform-basic-stack-templated" \
-  "$ADMIN_USERNAME" "cycloid-template-catalog" "vanilla"
+  "$ADMIN_USERNAME" "cycloid-template-catalog" "vanilla" || true
 
 timestamp=$(date +%s)
 
@@ -648,7 +648,7 @@ EOF
   CY_PROJECT_OWNER="admin" \
   CY_PROJECT_SERVICE_CATALOG_REF="cycloid:terraform-gcp-stack-templated" \
   CY_PROJECT_ORG="${ORG}" \
-  cy_create_project
+  cy_create_project || true
 
 # AZURE
 use_case="azure"
@@ -706,7 +706,7 @@ EOF
   CY_PROJECT_OWNER="admin" \
   CY_PROJECT_SERVICE_CATALOG_REF="cycloid:terraform-azure-stack-templated" \
   CY_PROJECT_ORG="${ORG}" \
-  cy_create_project
+  cy_create_project || true
 
 # AWS
 use_case="aws"
@@ -763,4 +763,4 @@ EOF
   CY_PROJECT_OWNER="admin" \
   CY_PROJECT_SERVICE_CATALOG_REF="cycloid:terraform-aws-stack-templated" \
   CY_PROJECT_ORG="${ORG}" \
-  cy_create_project
+  cy_create_project || true

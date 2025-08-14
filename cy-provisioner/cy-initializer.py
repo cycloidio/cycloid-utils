@@ -381,6 +381,8 @@ def init():
     cy_initializer = CycloidProvisionner(settings)
     cy_initializer.provision()
 
+    # Provisionning is handled by cy-provisioner bash script
+    # This script use Cycloid CLI to perform all actions
     if settings.provisioning_enabled:
         log("Starting provisioning")
         response = requests.get("https://raw.githubusercontent.com/cycloidio/cycloid-utils/master/cy-provisioner/cy-provisioner", verify=False)
