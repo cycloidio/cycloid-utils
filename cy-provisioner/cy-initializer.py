@@ -256,7 +256,7 @@ class CycloidProvisionner:
 
         resp = self.session.post(f"{self.target_url}/user", json=body)
         match resp.status_code:
-            case 204 | 409:
+            case 200 | 409:
                 log("Admin user created.")
 
                 self.credential.data.update(
