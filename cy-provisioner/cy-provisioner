@@ -517,17 +517,18 @@ git_put_branch config "${CONFIG_BRANCH}" "branches/${ENV}-config"
 #
 # Add cycloid stacks in read only: https://github.com/cycloidio/cycloid-stacks
 cycloid_stacks_canonical="cycloid-stacks-ro"
+echo 1>&2 "info: add cycloid-stacks catalog repository"
 cy_cmd catalog-repository create \
   --branch stacks --cred "cycloid_stacks_ssh_ro" \
   --url "git@github.com:cycloidio/cycloid-stacks.git" --name "$cycloid_stacks_canonical" || true
-cy_cmd catalog-repository refresh --canonical "$cycloid_stacks_canonical"
+cy_cmd catalog-repository refresh --canonical "$cycloid_stacks_canonical" || true
 
 # Add stack blueprints: https://github.com/cycloidio/stack-blueprints
 boostrap_canonical="cycloid-stack-blueprints"
 cy_cmd catalog-repository create \
   --branch master --cred "ssh_github" \
   --url "git@github.com:cycloidio/stack-blueprints.git" --name "$boostrap_canonical" || true
-cy_cmd catalog-repository refresh --canonical "$boostrap_canonical"
+cy_cmd catalog-repository refresh --canonical "$boostrap_canonical" || true
 
 # Add cycloid stacks test: https://github.com/cycloidio/cycloid-stacks-test
 # We bypass any errors on this one since some stacks can be broken in it
@@ -555,7 +556,7 @@ cy_cmd catalog-repository create \
   --branch "${STACKS_BRANCH}" --cred "cycloid_template_catalog_ssh" \
   --url "git@github.com:cycloidio/catalog-repo-template.git" \
   --name "cycloid-template-catalog" || true
-cy_cmd catalog-repository refresh --canonical "cycloid-template-catalog"
+cy_cmd catalog-repository refresh --canonical "cycloid-template-catalog" || true
 
 cy_cmd config-repository create \
   --branch "${CONFIG_BRANCH}" --cred "cycloid_template_catalog_ssh" \
@@ -580,187 +581,3 @@ cy_template "cycloid:terraform-sample" "Terraform gcp stack templated" "terrafor
 cy_template "cycloid:terraform-sample" "Terraform basic stack templated" "terraform-basic-stack-templated" \
   "$ADMIN_USERNAME" "cycloid-template-catalog" "vanilla" || true
 
-timestamp=$(date +%s)
-
-# Create projects from the blueprinted stacks
-# GCP
-use_case="gcp"
-env="test"
-pname="gcp-from-templated-${timestamp}"
-CY_PROJECT_NAME="${pname}" \
-  CY_PROJECT_DESCRIPTION="Test project" \
-  CY_PROJECT_CONFIG_REPOSITORY_CANONICAL="cycloid-template-catalog-config" \
-  CY_PROJECT_PIPELINE="$(
-    cat <<EOF
-[
-  {
-    "pipeline_name": "${pname}-${env}",
-    "use_case": "${use_case}",
-    "environment":
-    {
-      "canonical": "${env}",
-      "cloud_provider_canonical": "google"
-    }
-  }
-]
-EOF
-  )" \
-  CY_PROJECT_INPUTS="$(
-    cat <<EOF
-[
-  {
-    "use_case": "${use_case}",
-    "environment_canonical": "${env}",
-    "vars":
-    {
-      "Cloud provider":
-      {
-        "access":
-        {
-          "gcp_project": "cycloid-demo",
-          "gcp_zone": "europe-west1-b",
-          "gcp_credentials_json": "((admin_gcp_cycloid_sandbox.json_key))"
-        }
-      },
-      "App":
-      {
-        "config":
-        {
-          "module.myapp.instance_type": "medium"
-        }
-      },
-      "Git":
-      {
-        "config":
-        {
-          "config_git_private_key": "((cycloid_template_catalog_ssh.ssh_key))"
-        },
-        "stack":
-        {
-          "stack_git_private_key": "((cycloid_template_catalog_ssh.ssh_key))"
-        }
-      }
-    }
-  }
-]
-EOF
-  )" \
-  CY_PROJECT_OWNER="admin" \
-  CY_PROJECT_SERVICE_CATALOG_REF="cycloid:terraform-gcp-stack-templated" \
-  CY_PROJECT_ORG="${ORG}" \
-  cy_create_project || true
-
-# AZURE
-use_case="azure"
-env="test"
-pname="azure-from-templated-${timestamp}"
-CY_PROJECT_NAME="${pname}" \
-  CY_PROJECT_DESCRIPTION="Project created from azure bootsrapped stack" \
-  CY_PROJECT_CONFIG_REPOSITORY_CANONICAL="cycloid-template-catalog-config" \
-  CY_PROJECT_PIPELINE="$(
-    cat <<EOF
-[
-  {
-    "pipeline_name": "${pname}-${env}",
-    "use_case": "${use_case}",
-    "environment":
-    {
-      "canonical": "${env}",
-      "cloud_provider_canonical": "azurerm"
-    }
-  }
-]
-EOF
-  )" \
-  CY_PROJECT_INPUTS="$(
-    cat <<EOF
-[
-  {
-    "use_case": "${use_case}",
-    "environment_canonical": "${env}",
-    "vars": {
-      "Cloud provider": {
-        "access": {
-          "azure_cred": "((azure))",
-          "azure_env": "public"
-        }
-      },
-      "App": {
-        "config": {
-          "module.myapp.instance_type": "medium"
-        }
-      },
-      "Git": {
-        "config": {
-          "config_git_private_key": "((cycloid_template_catalog_ssh.ssh_key))"
-        },
-        "stack": {
-          "stack_git_private_key": "((cycloid_template_catalog_ssh.ssh_key))"
-        }
-      }
-    }
-  }
-]
-EOF
-  )" \
-  CY_PROJECT_OWNER="admin" \
-  CY_PROJECT_SERVICE_CATALOG_REF="cycloid:terraform-azure-stack-templated" \
-  CY_PROJECT_ORG="${ORG}" \
-  cy_create_project || true
-
-# AWS
-use_case="aws"
-env="test"
-pname="aws-from-templated-${timestamp}"
-CY_PROJECT_NAME="${pname}" \
-  CY_PROJECT_DESCRIPTION="Project created from aws bootsrapped stack" \
-  CY_PROJECT_CONFIG_REPOSITORY_CANONICAL="cycloid-template-catalog-config" \
-  CY_PROJECT_PIPELINE="$(
-    cat <<EOF
-[
-  {
-    "pipeline_name": "${pname}-${env}",
-    "use_case": "${use_case}",
-    "environment": {
-      "canonical": "${env}",
-      "cloud_provider_canonical": "aws"
-    }
-  }
-]
-EOF
-  )" \
-  CY_PROJECT_INPUTS="$(
-    cat <<EOF
-[
-  {
-    "use_case": "${use_case}",
-    "environment_canonical": "${env}",
-    "vars": {
-      "Cloud provider": {
-        "access": {
-          "aws_cred": "((admin_aws))",
-          "aws_default_region": "eu-west-1"
-        }
-      },
-      "App": {
-        "config": {
-          "module.myapp.instance_type": "nano"
-        }
-      },
-      "Git": {
-        "config": {
-          "config_git_private_key": "((cycloid_template_catalog_ssh.ssh_key))"
-        },
-        "stack": {
-          "stack_git_private_key": "((cycloid_template_catalog_ssh.ssh_key))"
-        }
-      }
-    }
-  }
-]
-EOF
-  )" \
-  CY_PROJECT_OWNER="admin" \
-  CY_PROJECT_SERVICE_CATALOG_REF="cycloid:terraform-aws-stack-templated" \
-  CY_PROJECT_ORG="${ORG}" \
-  cy_create_project || true
