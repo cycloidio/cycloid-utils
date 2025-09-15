@@ -8,7 +8,6 @@ pkgs.mkShell {
     inherit (pkgs)
       watchexec
       ruff
-      ruff-lsp
       pyright
       ;
   };
