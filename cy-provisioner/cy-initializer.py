@@ -13,15 +13,22 @@ import urllib3
 
 urllib3.disable_warnings()
 
-class Settings():
+
+class Settings:
     def __init__(self):
         self.project: str = os.environ.get("PROJECT", "cy-initializer").lower()
         self.env: str = os.environ.get("ENV", "local").lower()
-        self.credential_name: str = f"initializer-{self.project}-{self.env}" 
-        self.source_api_url: str = os.environ.get("CY_SOURCE_API_URL", "https://http-api.cycloid.io")
-        self.admin_email: str = os.environ.get("EMAIL", f"admin+{self.project}-{self.env}@cycloid.io")
+        self.credential_name: str = f"initializer-{self.project}-{self.env}"
+        self.source_api_url: str = os.environ.get(
+            "CY_SOURCE_API_URL", "https://http-api.cycloid.io"
+        )
+        self.admin_email: str = os.environ.get(
+            "EMAIL", f"admin+{self.project}-{self.env}@cycloid.io"
+        )
         self.licence_credential: str = os.environ.get("CY_LICENCE_CREDENTIAL", "")
-        self.provisioning_enabled: bool = os.environ.get("ENABLE_PROVISIONING", "false").lower() == "true"
+        self.provisioning_enabled: bool = (
+            os.environ.get("ENABLE_PROVISIONING", "false").lower() == "true"
+        )
 
         try:
             self.target_api_url: str = os.environ["CY_TARGET_API_URL"]
@@ -38,7 +45,7 @@ class Settings():
             raise Exception(
                 f"failed to check api version to determine wich licence to use, check backend or override CY_LICENCE_CREDENTIAL: {response.url} {response.status_code}: {response.text}"
             )
-        
+
         try:
             if response.json()["data"]["branch"] == "master":
                 self.licence_credential = "cycloid-onprem-licence-prod"
@@ -49,12 +56,14 @@ class Settings():
                 f"failed to decode /version payload from api, reponse:\n{response.text}\n{e}"
             )
 
+
 def log(*args, **kwargs):
     print("\033[0;32minfo:\033[0m", *args, **kwargs, file=sys.stderr)
 
 
 def error(*args, **kwargs):
     print("\033[0;31merror:\033[0m", *args, **kwargs, file=sys.stderr)
+
 
 class Credential:
     def __init__(self, settings):
@@ -242,11 +251,12 @@ class CycloidProvisionner:
             "username": "admin",
             "family_name": "admin",
             "given_name": "admin",
+            "full_name": "admin",
         }
 
         resp = self.session.post(f"{self.target_url}/user", json=body)
         match resp.status_code:
-            case 204 | 409:
+            case 200 | 409:
                 log("Admin user created.")
 
                 self.credential.data.update(
@@ -281,16 +291,16 @@ class CycloidProvisionner:
 
     def fetch_license(self):
         response = requests.get(
-                f"{self.source_url}/organizations/cycloid/credentials/{self.licence}",
-                headers={
-                    "Content-Type": "application/vnd.cycloid.io.v1+json",
-                    "Authorization": f"Bearer {self.source_token}",
-                },
-                verify=False,
-            )
+            f"{self.source_url}/organizations/cycloid/credentials/{self.licence}",
+            headers={
+                "Content-Type": "application/vnd.cycloid.io.v1+json",
+                "Authorization": f"Bearer {self.source_token}",
+            },
+            verify=False,
+        )
         if response.status_code != 200:
             raise Exception(
-                    f"failed to fetch licence with credential name {self.licence}: {response.status_code}: {response.text}"
+                f"failed to fetch licence with credential name {self.licence}: {response.status_code}: {response.text}"
             )
 
         try:
@@ -376,6 +386,7 @@ class CycloidProvisionner:
         finally:
             self.report()
 
+
 def init():
     settings = Settings()
     cy_initializer = CycloidProvisionner(settings)
@@ -385,9 +396,12 @@ def init():
     # This script use Cycloid CLI to perform all actions
     if settings.provisioning_enabled:
         log("Starting provisioning")
-        response = requests.get("https://raw.githubusercontent.com/cycloidio/cycloid-utils/master/cy-provisioner/cy-provisioner", verify=False)
+        response = requests.get(
+            "https://raw.githubusercontent.com/cycloidio/cycloid-utils/master/cy-provisioner/cy-provisioner",
+            verify=False,
+        )
         script = response.text
-         
+
         import subprocess
 
         env = os.environ.copy() | {
@@ -397,21 +411,22 @@ def init():
         }
 
         from tempfile import gettempdir
+
         filename = f"{gettempdir()}/cy-provisioner"
         with open(filename, "w") as f:
             f.write(script)
             os.chmod(filename, 0o755)
 
         sub_process = subprocess.Popen(
-                executable=filename,
-                args=["provision"],
-                close_fds=True,
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                encoding="utf-8",
-                env=env
-            )
+            executable=filename,
+            args=["provision"],
+            close_fds=True,
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            encoding="utf-8",
+            env=env,
+        )
 
         while True:
             out = sub_process.stdout.readline()
@@ -428,15 +443,19 @@ def init():
 
 
 def delete():
-    settings = Settings()
-    credential = Credential(settings)
-    credential.delete()
+    try:
+        settings = Settings()
+    finally:
+        credential = Credential(settings)
+        credential.delete()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        prog='cy-initializer', 
+        prog="cy-initializer",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        description=textwrap.dedent('''\
+        description=textwrap.dedent(
+            """\
         Cycloid internal environment provisioner.
         It will use and existing "source" console to initialize a "target" console.
 
@@ -453,7 +472,8 @@ if __name__ == "__main__":
         ENABLE_PROVISIONING (default: false): enable provisioning using cy-provisioner.
         PROVISIONER_SCRIPT_URL (default: https://raw.githubusercontent.com/cycloidio/cycloid-utils/master/cy-provisioner/cy-provisioner): specify the provisioner script url to curl | bash
         CY_LICENCE_CREDENTIAL (default: determined by the api version): specify the licence credential to use.
-        ''')
+        """
+        ),
     )
     parser.add_argument("--delete", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
@@ -461,6 +481,3 @@ if __name__ == "__main__":
         delete()
     else:
         init()
-
-    
-    
