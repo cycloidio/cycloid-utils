@@ -585,14 +585,22 @@ cy_cmd project create --update \
   --name "Playground" \
   --project "playground"
 
+# `environment create` is org-scoped (no --project flag); link attaches it to the
+# project. Both steps are needed so the env exists AND shows under the project
 cy_cmd environment create --update \
-  --project "playground" \
   --name "Dev" \
   --env "dev"
 
-cy_cmd environment create --update \
+cy_cmd environment link \
   --project "playground" \
+  --env "dev"
+
+cy_cmd environment create --update \
   --name "Prod" \
+  --env "prod"
+
+cy_cmd environment link \
+  --project "playground" \
   --env "prod"
 
 cy_cmd component create --update \
