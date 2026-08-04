@@ -603,6 +603,13 @@ cy_cmd environment link \
   --project "playground" \
   --env "prod"
 
+cy_cmd external-backend create infraview AWSRemoteTFState \
+  --project "" --env "dev" \
+  --cred "admin_aws" \
+  --bucket-name "$CRED_INFRA_VIEW_BUCKET_NAME" \
+  --bucket-path "$CRED_INFRA_VIEW_BUCKET_PATH" \
+  --region "eu-west-1"
+
 cy_cmd component create --update \
   --project "playground" \
   --env "dev" \
