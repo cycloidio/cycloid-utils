@@ -4,14 +4,45 @@ import argparse
 import json
 import os
 import secrets
+import socket
 import string
 import sys
 import textwrap
+from urllib.parse import urlparse
 
 import requests
 import urllib3
 
 urllib3.disable_warnings()
+
+
+def _pin_staging_target_dns() -> None:
+    """Bypass the per-env staging DNS negative-cache race.
+
+    api-<env>.staging.cycloid.io is a CNAME to the shared staging LB, which the
+    long-lived api.staging.cycloid.io also resolves to. When the per-env record is
+    negative-cached in the provisioning container, resolution for the target host
+    falls back to that LB's IP (the Host header is preserved, so routing is
+    unaffected). Scoped to *.staging.cycloid.io so real on-prem targets are untouched.
+    """
+    host = urlparse(os.environ.get("CY_TARGET_API_URL", "")).hostname or ""
+    if not host.endswith(".staging.cycloid.io"):
+        return
+
+    _orig_getaddrinfo = socket.getaddrinfo
+
+    def _patched(node, *args, **kwargs):
+        if node == host:
+            try:
+                return _orig_getaddrinfo(node, *args, **kwargs)
+            except socket.gaierror:
+                node = socket.gethostbyname("api.staging.cycloid.io")
+        return _orig_getaddrinfo(node, *args, **kwargs)
+
+    socket.getaddrinfo = _patched
+
+
+_pin_staging_target_dns()
 
 
 class Settings:
