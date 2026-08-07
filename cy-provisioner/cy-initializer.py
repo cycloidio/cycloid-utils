@@ -78,7 +78,10 @@ class Settings:
             )
 
         try:
-            if response.json()["data"]["branch"] == "master":
+            data = response.json()["data"]
+            version = data.get("version", "")
+            branch = data.get("branch", "")
+            if branch == "master" or "-saas" in version:
                 self.licence_credential = "cycloid-onprem-licence-prod"
             else:
                 self.licence_credential = "cycloid-onprem-licence-staging"
